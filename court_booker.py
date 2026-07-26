@@ -124,14 +124,14 @@ def book_court():
                 break
 
             if time_module.time() > deadline:
-                msg = f"Page redirected to unexpected date after 5 min. Target: {target_date}, Landed: {landed_date}"
+                msg = f"Page redirected to unexpected date after 4 mins. Target: {target_date}, Landed: {landed_date}"
                 print(msg)
                 send_notification("Tennis Court Booking Failed — Redirect Error", msg)
                 browser.close()
                 return
 
-            print(f"Date not yet available (landed: {landed_date}), retrying in 5s...")
-            time_module.sleep(5)
+            print(f"Date not yet available (landed: {landed_date}), retrying in 6s...")
+            time_module.sleep(6)
             page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
         unavail = page.query_selector("text=This Amenity is currently unavailable")
