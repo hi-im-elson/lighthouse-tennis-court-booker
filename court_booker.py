@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from dateutil.parser import parse as parse_date
 import time as time_module
 
+from logger import log   # ← add this
+
 load_dotenv()
 
 USERNAME = os.environ.get("BL_USERNAME")
@@ -35,7 +37,7 @@ PRIORITY_SLOTS = [
 
 def send_notification(subject: str, body: str):
     if not all([NOTIFY_TO, NOTIFY_FROM, NOTIFY_PASS]):
-        print(f"Skipping email notification (missing env vars). Subject: {subject}\n{body}")
+        log(f"Skipping email notification (missing env vars). Subject: {subject}", "WARNING")
         return
     try:
         msg = EmailMessage()
@@ -46,8 +48,9 @@ def send_notification(subject: str, body: str):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(NOTIFY_FROM, NOTIFY_PASS)
             server.send_message(msg)
+        log(f"Email sent: {subject}")
     except Exception as e:
-        print(f"Failed to send email notification: {e}")
+        log(f"Failed to send email notification: {e}", "ERROR")
 
 
 def is_enabled() -> bool:
@@ -79,12 +82,14 @@ def is_slot_in_range(slot_start: str, slot_end: str, range_str: str) -> bool:
 
 
 def book_court():
+    log("=== court_booker run started ===")
+
     if not is_enabled():
-        print("Script disabled via config.yml. Exiting.")
+        log("Script disabled via config.yml. Exiting.", "WARNING")
         return
 
     if not USERNAME or not PASSWORD:
-        print("Missing BL_USERNAME or BL_PASSWORD environment variables.")
+        log("Missing BL_USERNAME or BL_PASSWORD environment variables.", "ERROR")
         sys.exit(1)
 
     tz = pytz.timezone("America/New_York")
@@ -92,15 +97,20 @@ def book_court():
     target_date = (now + timedelta(days=8)).strftime("%Y-%m-%d")
     url = f"https://lighthousewest-tscc2794.buildinglink.com/V2/Tenant/Amenities/NewReservation.aspx?amenityId=68068&from=0&selectedDate={target_date}"
 
+    log(f"Target date: {target_date}")
+    log(f"Navigating to booking URL")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()
 
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
+        log(f"Initial page loaded. URL: {page.url}")
 
         # Handle login redirect
         if "login" in page.url.lower():
+            log("Login redirect detected. Attempting authentication.")
             page.fill("#Username, input[name*='user' i]", USERNAME)
             page.fill("#Password, input[type='password']", PASSWORD)
             login_btn = page.query_selector("#LoginButton, input[type='image'], input[type='submit'], button[type='submit']")
@@ -108,11 +118,13 @@ def book_court():
                 login_btn.click()
             else:
                 page.keyboard.press("Enter")
-            
+
             page.wait_for_url(lambda u: "newreservation.aspx" in u.lower(), timeout=20000)
             page.wait_for_load_state("networkidle", timeout=15000)
+            log("Login successful. Reservation page loaded.")
 
         deadline = time_module.time() + 240
+        retry_count = 0
         while True:
             raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
             try:
@@ -121,23 +133,25 @@ def book_court():
                 landed_date = raw_landed
 
             if landed_date == target_date:
+                log(f"Correct date confirmed: {landed_date}")
                 break
 
             if time_module.time() > deadline:
                 msg = f"Page redirected to unexpected date after 4 mins. Target: {target_date}, Landed: {landed_date}"
-                print(msg)
+                log(msg, "ERROR")
                 send_notification("Tennis Court Booking Failed — Redirect Error", msg)
                 browser.close()
                 return
 
-            print(f"Date not yet available (landed: {landed_date}), retrying in 6s...")
+            retry_count += 1
+            log(f"Date not yet available (landed: {landed_date}), retry #{retry_count} in 6s...", "DEBUG")
             time_module.sleep(6)
             page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
         unavail = page.query_selector("text=This Amenity is currently unavailable")
         if unavail:
             msg = f"Amenity unavailable on target date {target_date}."
-            print(msg)
+            log(msg, "WARNING")
             send_notification("Tennis Court Booking Failed — Unavailable", msg)
             browser.close()
             return
@@ -150,17 +164,18 @@ def book_court():
 
         if not avail_table:
             msg = f"Availability table not found for date {target_date}."
-            print(msg)
+            log(msg, "ERROR")
             send_notification("Tennis Court Booking Failed — UI Element Missing", msg)
             browser.close()
             return
 
         td_elements = avail_table.query_selector_all("td")
         available_ranges = [td.inner_text().strip() for td in td_elements if td.inner_text().strip()]
+        log(f"Available slots: {available_ranges}")
 
         if not available_ranges:
             msg = f"No available time slots found on {target_date}."
-            print(msg)
+            log(msg, "WARNING")
             send_notification("Tennis Court Booking Failed — No Slots Available", msg)
             browser.close()
             return
@@ -173,13 +188,13 @@ def book_court():
 
         if not selected_slot:
             msg = f"No preferred time slot available on {target_date}. Available ranges: {', '.join(available_ranges)}"
-            print(msg)
+            log(msg, "WARNING")
             send_notification("Tennis Court Booking Failed — Preferred Slots Taken", msg)
             browser.close()
             return
 
         s_start, s_end, label = selected_slot
-        print(f"Selected slot: {label} ({s_start} - {s_end})")
+        log(f"Selected slot: {label} ({s_start} - {s_end})")
 
         start_input = page.query_selector("#ctl00_ContentPlaceHolder1_StartTimePicker_dateInput")
         end_input = page.query_selector("#ctl00_ContentPlaceHolder1_EndTimePicker_dateInput")
@@ -188,22 +203,23 @@ def book_court():
             start_input.fill(s_start)
             end_input.fill(s_end)
             page.keyboard.press("Tab")
+            log("Time inputs filled.")
 
         save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_btnSave, input[value*='Save' i], button:has-text('Save'), input[id*='save' i]")
         if save_btn:
             save_btn.click()
             page.wait_for_load_state("networkidle", timeout=15000)
-            
-            # Check for confirmation
+
             success_msg = f"Successfully booked tennis court for {target_date} at {label}."
-            print(success_msg)
+            log(success_msg)
             send_notification("Tennis Court Booked Successfully!", success_msg)
         else:
             msg = f"Save button not found when booking slot {label} on {target_date}."
-            print(msg)
+            log(msg, "ERROR")
             send_notification("Tennis Court Booking Failed — Save Button Missing", msg)
 
         browser.close()
+        log("=== court_booker run complete ===")
 
 
 if __name__ == "__main__":
