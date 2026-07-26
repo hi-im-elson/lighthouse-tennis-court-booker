@@ -1,3 +1,4 @@
+from dry_run import browser
 import os
 import sys
 import smtplib
@@ -6,6 +7,7 @@ from datetime import datetime, timedelta, time
 import pytz
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
+from dateutil.parser import parse as parse_date
 
 load_dotenv()
 
@@ -108,7 +110,11 @@ def book_court():
             page.wait_for_url(lambda u: "newreservation.aspx" in u.lower(), timeout=20000)
             page.wait_for_load_state("networkidle", timeout=15000)
 
-        landed_date = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
+        raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
+        try:
+            landed_date = parse_date(raw_landed).strftime("%Y-%m-%d") if raw_landed else ""
+        except Exception:
+            landed_date = raw_landed
         if landed_date and landed_date != target_date:
             msg = f"Page redirected to unexpected date. Target: {target_date}, Landed: {landed_date}"
             print(msg)
