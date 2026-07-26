@@ -1,0 +1,26 @@
+[project]
+name = "lighthouse-tennis-court-booker"
+version = "0.1.0"
+description = "Automated tennis court booking for Lighthouse West"
+authors = [
+    {name = "Elson"}
+]
+requires-python = "^3.11"
+dependencies = [
+    "playwright (>=1.61.0,<2.0.0)",
+    "pytz (>=2026.3.post1,<2027.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
