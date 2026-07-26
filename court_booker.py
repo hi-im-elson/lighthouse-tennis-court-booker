@@ -112,7 +112,7 @@ def book_court():
             page.wait_for_url(lambda u: "newreservation.aspx" in u.lower(), timeout=20000)
             page.wait_for_load_state("networkidle", timeout=15000)
 
-        deadline = time_module.time() + 300
+        deadline = time_module.time() + 240
         while True:
             raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
             try:
