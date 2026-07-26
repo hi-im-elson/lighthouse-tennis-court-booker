@@ -30,9 +30,22 @@ with sync_playwright() as p:
 
     # Handle login redirect
     if "Login" in page.title() or "login" in page.url.lower():
-        page.fill("input[name*='user' i], input[type='text']", USERNAME)
-        page.fill("input[name*='pass' i], input[type='password']", PASSWORD)
-        page.click("input[type='submit'], button[type='submit']")
+        print("On login page. Title:", page.title(), "URL:", page.url)
+
+        # Fill credentials
+        page.fill("#Username, input[name*='user' i]", USERNAME)
+        page.fill("#Password, input[type='password']", PASSWORD)
+        print("Filled credentials")
+
+        # Submit form
+        login_btn = page.query_selector("#LoginButton, input[type='image'], input[type='submit'], button[type='submit']")
+        if login_btn and login_btn.is_visible():
+            login_btn.click()
+        else:
+            page.keyboard.press("Enter")
+        
+        # Wait for navigation to complete away from login
+        page.wait_for_url(lambda url: "login" not in url.lower(), timeout=20000)
         page.wait_for_load_state("networkidle", timeout=15000)
 
     landed_date = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else "unknown"
