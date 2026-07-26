@@ -34,3 +34,11 @@ jobs:
 
       - name: Run booking script
         run: poetry run python court_booker.py
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: court-booker-log-${{ github.run_id }}
+          path: logs/
+          retention-days: 30
