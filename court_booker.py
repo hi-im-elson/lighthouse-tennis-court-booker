@@ -1,3 +1,4 @@
+from dry_run import page
 from dry_run import browser
 import os
 import sys
@@ -8,6 +9,7 @@ import pytz
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
 from dateutil.parser import parse as parse_date
+import time as time_module
 
 load_dotenv()
 
@@ -110,17 +112,27 @@ def book_court():
             page.wait_for_url(lambda u: "newreservation.aspx" in u.lower(), timeout=20000)
             page.wait_for_load_state("networkidle", timeout=15000)
 
-        raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
-        try:
-            landed_date = parse_date(raw_landed).strftime("%Y-%m-%d") if raw_landed else ""
-        except Exception:
-            landed_date = raw_landed
-        if landed_date and landed_date != target_date:
-            msg = f"Page redirected to unexpected date. Target: {target_date}, Landed: {landed_date}"
-            print(msg)
-            send_notification("Tennis Court Booking Failed — Redirect Error", msg)
-            browser.close()
-            return
+        deadline = time_module.time() + 300
+        while True:
+            raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
+            try:
+                landed_date = parse_date(raw_landed).strftime("%Y-%m-%d") if raw_landed else ""
+            except Exception:
+                landed_date = raw_landed
+
+            if landed_date == target_date:
+                break
+
+            if time_module.time() > deadline:
+                msg = f"Page redirected to unexpected date after 5 min. Target: {target_date}, Landed: {landed_date}"
+                print(msg)
+                send_notification("Tennis Court Booking Failed — Redirect Error", msg)
+                browser.close()
+                return
+
+            print(f"Date not yet available (landed: {landed_date}), retrying in 5s...")
+            time_module.sleep(5)
+            page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
         unavail = page.query_selector("text=This Amenity is currently unavailable")
         if unavail:
