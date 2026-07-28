@@ -205,7 +205,7 @@ def book_court():
             page.keyboard.press("Tab")
             log("Time inputs filled.")
 
-        save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_btnSave, input[value*='Save' i], button:has-text('Save'), input[id*='save' i]")
+        save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton")
         if save_btn:
             save_btn.click()
             page.wait_for_load_state("networkidle", timeout=15000)

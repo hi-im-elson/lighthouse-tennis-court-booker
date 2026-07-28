@@ -14,7 +14,7 @@ load_dotenv()
 USERNAME = os.environ["BL_USERNAME"]
 PASSWORD = os.environ["BL_PASSWORD"]
 
-TARGET_DATE = (datetime.now() + timedelta(days=8)).strftime("%Y-%m-%d")
+TARGET_DATE = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
 URL = f"https://lighthousewest-tscc2794.buildinglink.com/V2/Tenant/Amenities/NewReservation.aspx?amenityId=68068&from=0&selectedDate={TARGET_DATE}"
 
 
@@ -111,14 +111,11 @@ with sync_playwright() as p:
             print()
 
     # Save button
-    save_candidates = ["input[value*='Save' i]", "button[id*='save' i]", "input[id*='save' i]", "button:has-text('Save')"]
-    print_section("SAVE BUTTON — CANDIDATE ELEMENTS", "")
-    for sel in save_candidates:
-        el = page.query_selector(sel)
-        if el:
-            print(f"  Selector: {sel}")
-            print(f"  HTML:     {el.evaluate('el => el.outerHTML')[:300]}")
-            print()
+    save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton")
+    print_section(
+        "SAVE BUTTON ELEMENT",
+        save_btn.evaluate("el => el.outerHTML")[:300] if save_btn else "NOT FOUND — selector may have changed"
+    )
 
     # Dump full page HTML as a fallback if all selectors miss
     print_section("FULL PAGE HTML (truncated to 8000 chars)", page.content()[:8000])
