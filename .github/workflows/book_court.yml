@@ -2,7 +2,7 @@ name: Book Tennis Court
 
 on:
   schedule:
-    - cron: "58 3 * * *"  # 23:58 ET (UTC-4, EDT)
+    - cron: "59 3 * * *"  # 23:59 ET (UTC-4, EDT)
   workflow_dispatch:
 
 jobs:
