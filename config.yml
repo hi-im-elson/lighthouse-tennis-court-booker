@@ -12,3 +12,9 @@ profiles:
     days_offset: 7
     save_html: true
     notifications: true
+
+  dry_run_no_save:
+    headless: false
+    days_offset: 7
+    save_html: false
+    notifications: true

@@ -72,7 +72,7 @@ def save_page_html(page, target_date: str, label: str = "page"):
 
 def book_court(profile: str = "court_booker"):
     cfg = load_config(profile)
-    dry_run = profile == "dry_run"
+    skip_booking = profile == "dry_run_no_save"
     headless = cfg["headless"]
     days_offset = cfg["days_offset"]
     save_html = cfg["save_html"]
@@ -98,7 +98,7 @@ def book_court(profile: str = "court_booker"):
         if save_html:
             save_page_html(page, target_date, label="after_login")
 
-        deadline = time_module.time() + (60 if dry_run else 240)
+        deadline = time_module.time() + (60 if skip_booking else 240)
         retry_count = 0
         while True:
             raw = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
@@ -111,8 +111,8 @@ def book_court(profile: str = "court_booker"):
                 log(f"Correct date confirmed: {landed}")
                 break
 
-            if dry_run:
-                log(f"[DRY RUN] Date mismatch (target={target_date}, landed={landed})", "WARNING")
+            if skip_booking:
+                log(f"[DRY RUN NO SAVE] Date mismatch (target={target_date}, landed={landed})", "WARNING")
                 break
 
             if time_module.time() > deadline:
@@ -189,9 +189,8 @@ def book_court(profile: str = "court_booker"):
             if save_html:
                 save_page_html(page, target_date, label="filled")
 
-        if dry_run:
-            log(f"[DRY RUN] Would book '{label}' on {target_date}. Skipping save.")
-            input("\n[DRY RUN] Press Enter to close browser...")
+        if skip_booking:
+            log(f"[DRY RUN NO SAVE] Would book '{label}' on {target_date}. Skipping save.")
         else:
             save_btn = page.query_selector(
                 "#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton"
@@ -216,8 +215,21 @@ def book_court(profile: str = "court_booker"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated tennis court booker.")
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--dry-run", action="store_true", help="Run in dry-run mode (headful, +7d, saves HTML, no booking)"
     )
+    group.add_argument(
+        "--dry-run-no-save", action="store_true", help="Dry run without saving HTML (for testing save logic)"
+    )
     args = parser.parse_args()
-    book_court(profile="dry_run" if args.dry_run else "court_booker")
+
+    if args.dry_run:
+        profile = "dry_run"
+    elif args.dry_run_no_save:
+        profile = "dry_run_no_save"
+    else:
+        profile = "court_booker"
+
+    book_court(profile=profile)
+
