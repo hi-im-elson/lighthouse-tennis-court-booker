@@ -194,7 +194,10 @@ def book_court(headless: bool = True):
         save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton")
         if save_btn:
             save_btn.click()
-            page.wait_for_load_state("networkidle", timeout=15000)
+            try:
+                page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                page.wait_for_load_state("domcontentloaded", timeout=5000)
 
             success_msg = f"Successfully booked tennis court for {target_date} at {label}."
             log(success_msg)

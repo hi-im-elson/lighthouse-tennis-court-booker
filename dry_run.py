@@ -46,7 +46,7 @@ def run_dry_run(headless: bool = False, interactive: Optional[bool] = None):
     with sync_playwright() as p:
         browser, context, page = create_browser_context(p, headless=headless)
 
-        page.goto(url, wait_until="networkidle", timeout=15000)
+        page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
         # Handle login redirect using shared helper
         login_if_needed(page, username, password, log_fn=print)
