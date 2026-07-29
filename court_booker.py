@@ -1,8 +1,7 @@
-from dry_run import page
-from dry_run import browser
 import os
 import sys
 import smtplib
+import argparse
 from email.message import EmailMessage
 from datetime import datetime, timedelta, time
 import pytz
@@ -11,7 +10,8 @@ from dotenv import load_dotenv
 from dateutil.parser import parse as parse_date
 import time as time_module
 
-from logger import log   # ← add this
+from logger import log
+from utils.booker import get_reservation_url, create_browser_context, login_if_needed
 
 load_dotenv()
 
@@ -81,7 +81,7 @@ def is_slot_in_range(slot_start: str, slot_end: str, range_str: str) -> bool:
         return False
 
 
-def book_court():
+def book_court(headless: bool = True):
     log("=== court_booker run started ===")
 
     if not is_enabled():
@@ -95,33 +95,19 @@ def book_court():
     tz = pytz.timezone("America/New_York")
     now = datetime.now(tz)
     target_date = (now + timedelta(days=8)).strftime("%Y-%m-%d")
-    url = f"https://lighthousewest-tscc2794.buildinglink.com/V2/Tenant/Amenities/NewReservation.aspx?amenityId=68068&from=0&selectedDate={target_date}"
+    url = get_reservation_url(target_date)
 
     log(f"Target date: {target_date}")
-    log(f"Navigating to booking URL")
+    log(f"Navigating to booking URL (headless={headless})")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
-        page = context.new_page()
+        browser, context, page = create_browser_context(p, headless=headless)
 
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
         log(f"Initial page loaded. URL: {page.url}")
 
-        # Handle login redirect
-        if "login" in page.url.lower():
-            log("Login redirect detected. Attempting authentication.")
-            page.fill("#Username, input[name*='user' i]", USERNAME)
-            page.fill("#Password, input[type='password']", PASSWORD)
-            login_btn = page.query_selector("#LoginButton, input[type='image'], input[type='submit'], button[type='submit']")
-            if login_btn and login_btn.is_visible():
-                login_btn.click()
-            else:
-                page.keyboard.press("Enter")
-
-            page.wait_for_url(lambda u: "newreservation.aspx" in u.lower(), timeout=20000)
-            page.wait_for_load_state("networkidle", timeout=15000)
-            log("Login successful. Reservation page loaded.")
+        # Handle login redirect using shared helper
+        login_if_needed(page, USERNAME, PASSWORD, log_fn=log)
 
         deadline = time_module.time() + 240
         retry_count = 0
@@ -223,4 +209,17 @@ def book_court():
 
 
 if __name__ == "__main__":
-    book_court()
+    parser = argparse.ArgumentParser(description="Automated tennis court booker.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--headless", action="store_true", help="Run browser in headless mode (default)"
+    )
+    group.add_argument(
+        "--headful", action="store_true", help="Run browser in headful mode (visible GUI)"
+    )
+
+    args = parser.parse_args()
+
+    # Default to headless=True for court_booker unless --headful is specified
+    is_headless = False if args.headful else True
+    book_court(headless=is_headless)

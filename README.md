@@ -10,10 +10,26 @@ poetry run playwright install chromium
 cp .env.example .env  # fill in your values
 ```
 
-## Dry run (DOM inspection — run before deploying)
+## Usage
+
+### Scheduled Court Booker
 
 ```bash
+# Default (headless mode)
+BL_USERNAME=username BL_PASSWORD=your_password poetry run python court_booker.py
+
+# Optional: Run with visible browser GUI
+poetry run python court_booker.py --headful
+```
+
+### Dry Run (DOM inspection — run before deploying)
+
+```bash
+# Default (headful mode so you can watch)
 BL_USERNAME=username BL_PASSWORD=your_password poetry run python dry_run.py
+
+# Optional: Run headlessly (e.g. on headless server / CI)
+poetry run python dry_run.py --headless
 ```
 
 ## Config
