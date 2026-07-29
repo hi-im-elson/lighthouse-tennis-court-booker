@@ -1,0 +1,19 @@
+2026-07-29 08:44:34 [DEBUG] Skipping notification (disabled). Subject: Test Subject
+2026-07-29 08:44:34 [INFO ] === dry_run started ===
+2026-07-29 08:44:34 [INFO ] Target date: 2026-08-05 (+7d), headless=False
+2026-07-29 08:44:34 [INFO ] Page loaded: https://example.com/?selectedDate=2026-08-05
+2026-07-29 08:44:34 [INFO ] Correct date confirmed: 2026-08-05
+2026-07-29 08:44:34 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:44:34 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00–19:00)
+2026-07-29 08:44:34 [INFO ] Time inputs filled.
+2026-07-29 08:44:34 [INFO ] [DRY RUN] Would book '6:00 PM - 7:00 PM' on 2026-08-05. Skipping save.
+2026-07-29 08:44:34 [INFO ] === dry_run complete ===
+2026-07-29 08:44:34 [INFO ] === court_booker started ===
+2026-07-29 08:44:34 [INFO ] Target date: 2026-08-06 (+8d), headless=True
+2026-07-29 08:44:34 [INFO ] Page loaded: https://example.com/?selectedDate=2026-08-06
+2026-07-29 08:44:34 [INFO ] Correct date confirmed: 2026-08-06
+2026-07-29 08:44:34 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:44:34 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00–19:00)
+2026-07-29 08:44:34 [INFO ] Time inputs filled.
+2026-07-29 08:44:34 [INFO ] Successfully booked tennis court for 2026-08-06 at 6:00 PM - 7:00 PM.
+2026-07-29 08:44:34 [INFO ] === court_booker complete ===

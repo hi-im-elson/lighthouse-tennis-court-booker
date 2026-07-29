@@ -1,25 +1,22 @@
 import os
 import sys
-import smtplib
 import argparse
-from email.message import EmailMessage
 from datetime import datetime, timedelta, time
 import pytz
+import yaml
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
 from dateutil.parser import parse as parse_date
 import time as time_module
 
-from logger import log
+from utils.logger import log
+from utils.notifications import send_notification
 from utils.booker import get_reservation_url, create_browser_context, login_if_needed
 
 load_dotenv()
 
 USERNAME = os.environ.get("BL_USERNAME")
 PASSWORD = os.environ.get("BL_PASSWORD")
-NOTIFY_TO = os.environ.get("NOTIFY_EMAIL_TO")
-NOTIFY_FROM = os.environ.get("NOTIFY_EMAIL_FROM")
-NOTIFY_PASS = os.environ.get("NOTIFY_EMAIL_PASSWORD")
 
 PRIORITY_SLOTS = [
     ("18:00", "19:00", "6:00 PM - 7:00 PM"),
@@ -35,31 +32,13 @@ PRIORITY_SLOTS = [
 ]
 
 
-def send_notification(subject: str, body: str):
-    if not all([NOTIFY_TO, NOTIFY_FROM, NOTIFY_PASS]):
-        log(f"Skipping email notification (missing env vars). Subject: {subject}", "WARNING")
-        return
-    try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = NOTIFY_FROM
-        msg["To"] = NOTIFY_TO
-        msg.set_content(body)
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(NOTIFY_FROM, NOTIFY_PASS)
-            server.send_message(msg)
-        log(f"Email sent: {subject}")
-    except Exception as e:
-        log(f"Failed to send email notification: {e}", "ERROR")
-
-
-def is_enabled() -> bool:
-    if os.path.exists("config.yml"):
-        with open("config.yml", "r") as f:
-            for line in f:
-                if line.strip().startswith("enabled:"):
-                    return "true" in line.lower()
-    return True
+def load_config(profile: str) -> dict:
+    with open("config.yml") as f:
+        cfg = yaml.safe_load(f)
+    if not cfg.get("enabled", True):
+        log("Script disabled via config.yml. Exiting.", "WARNING")
+        sys.exit(0)
+    return cfg["profiles"][profile]
 
 
 def parse_time_str(t_str: str) -> time:
@@ -74,71 +53,86 @@ def is_slot_in_range(slot_start: str, slot_end: str, range_str: str) -> bool:
         parts = [p.strip() for p in range_str.split("-")]
         if len(parts) != 2:
             return False
-        r_start = parse_time_str(parts[0])
-        r_end = parse_time_str(parts[1])
-        return s_time >= r_start and e_time <= r_end
+        return s_time >= parse_time_str(parts[0]) and e_time <= parse_time_str(parts[1])
     except Exception:
         return False
 
 
-def book_court(headless: bool = True):
-    log("=== court_booker run started ===")
+def save_page_html(page, target_date: str, label: str = "page"):
+    try:
+        os.makedirs("html", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = f"html/{label}_{target_date}_{timestamp}.html"
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(page.content())
+        log(f"Saved HTML: {path}")
+    except Exception as e:
+        log(f"Failed to save HTML: {e}", "WARNING")
 
-    if not is_enabled():
-        log("Script disabled via config.yml. Exiting.", "WARNING")
-        return
+
+def book_court(profile: str = "court_booker"):
+    cfg = load_config(profile)
+    dry_run = profile == "dry_run"
+    headless = cfg["headless"]
+    days_offset = cfg["days_offset"]
+    save_html = cfg["save_html"]
+    notifications = cfg["notifications"]
+
+    log(f"=== {profile} started ===")
 
     if not USERNAME or not PASSWORD:
-        log("Missing BL_USERNAME or BL_PASSWORD environment variables.", "ERROR")
+        log("Missing BL_USERNAME or BL_PASSWORD.", "ERROR")
         sys.exit(1)
 
     tz = pytz.timezone("America/New_York")
-    now = datetime.now(tz)
-    target_date = (now + timedelta(days=8)).strftime("%Y-%m-%d")
+    target_date = (datetime.now(tz) + timedelta(days=days_offset)).strftime("%Y-%m-%d")
     url = get_reservation_url(target_date)
-
-    log(f"Target date: {target_date}")
-    log(f"Navigating to booking URL (headless={headless})")
+    log(f"Target date: {target_date} (+{days_offset}d), headless={headless}")
 
     with sync_playwright() as p:
         browser, context, page = create_browser_context(p, headless=headless)
-
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
-        log(f"Initial page loaded. URL: {page.url}")
+        log(f"Page loaded: {page.url}")
 
-        # Handle login redirect using shared helper
         login_if_needed(page, USERNAME, PASSWORD, log_fn=log)
+        if save_html:
+            save_page_html(page, target_date, label="after_login")
 
-        deadline = time_module.time() + 240
+        deadline = time_module.time() + (60 if dry_run else 240)
         retry_count = 0
         while True:
-            raw_landed = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
+            raw = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
             try:
-                landed_date = parse_date(raw_landed).strftime("%Y-%m-%d") if raw_landed else ""
+                landed = parse_date(raw).strftime("%Y-%m-%d") if raw else ""
             except Exception:
-                landed_date = raw_landed
+                landed = raw
 
-            if landed_date == target_date:
-                log(f"Correct date confirmed: {landed_date}")
+            if landed == target_date:
+                log(f"Correct date confirmed: {landed}")
+                break
+
+            if dry_run:
+                log(f"[DRY RUN] Date mismatch (target={target_date}, landed={landed})", "WARNING")
                 break
 
             if time_module.time() > deadline:
-                msg = f"Page redirected to unexpected date after 4 mins. Target: {target_date}, Landed: {landed_date}"
+                msg = f"Redirect timeout. Target: {target_date}, Landed: {landed}"
                 log(msg, "ERROR")
-                send_notification("Tennis Court Booking Failed — Redirect Error", msg)
+                send_notification("Tennis Court Booking Failed — Redirect Error", msg, enabled=notifications)
                 browser.close()
                 return
 
             retry_count += 1
-            log(f"Date not yet available (landed: {landed_date}), retry #{retry_count} in 6s...", "DEBUG")
+            log(f"Date not ready (landed={landed}), retry #{retry_count} in 6s...", "DEBUG")
             time_module.sleep(6)
             page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
-        unavail = page.query_selector("text=This Amenity is currently unavailable")
-        if unavail:
-            msg = f"Amenity unavailable on target date {target_date}."
+        if page.query_selector("text=This Amenity is currently unavailable"):
+            msg = f"Amenity unavailable on {target_date}."
             log(msg, "WARNING")
-            send_notification("Tennis Court Booking Failed — Unavailable", msg)
+            if save_html:
+                save_page_html(page, target_date, label="unavailable")
+            send_notification("Tennis Court Booking Failed — Unavailable", msg, enabled=notifications)
             browser.close()
             return
 
@@ -149,80 +143,81 @@ def book_court(headless: bool = True):
             pass
 
         if not avail_table:
-            msg = f"Availability table not found for date {target_date}."
+            msg = f"Availability table not found for {target_date}."
             log(msg, "ERROR")
-            send_notification("Tennis Court Booking Failed — UI Element Missing", msg)
+            if save_html:
+                save_page_html(page, target_date, label="no_table")
+            send_notification("Tennis Court Booking Failed — UI Element Missing", msg, enabled=notifications)
             browser.close()
             return
 
         td_elements = avail_table.query_selector_all("td")
         available_ranges = [td.inner_text().strip() for td in td_elements if td.inner_text().strip()]
         log(f"Available slots: {available_ranges}")
+        if save_html:
+            save_page_html(page, target_date, label="availability")
 
         if not available_ranges:
-            msg = f"No available time slots found on {target_date}."
+            msg = f"No available time slots on {target_date}."
             log(msg, "WARNING")
-            send_notification("Tennis Court Booking Failed — No Slots Available", msg)
+            send_notification("Tennis Court Booking Failed — No Slots Available", msg, enabled=notifications)
             browser.close()
             return
 
-        selected_slot = None
-        for s_start, s_end, label in PRIORITY_SLOTS:
-            if any(is_slot_in_range(s_start, s_end, r) for r in available_ranges):
-                selected_slot = (s_start, s_end, label)
-                break
+        selected_slot = next(
+            (s for s in PRIORITY_SLOTS if any(is_slot_in_range(s[0], s[1], r) for r in available_ranges)),
+            None,
+        )
 
         if not selected_slot:
-            msg = f"No preferred time slot available on {target_date}. Available ranges: {', '.join(available_ranges)}"
+            msg = f"No preferred slot on {target_date}. Available: {', '.join(available_ranges)}"
             log(msg, "WARNING")
-            send_notification("Tennis Court Booking Failed — Preferred Slots Taken", msg)
+            send_notification("Tennis Court Booking Failed — Preferred Slots Taken", msg, enabled=notifications)
             browser.close()
             return
 
         s_start, s_end, label = selected_slot
-        log(f"Selected slot: {label} ({s_start} - {s_end})")
+        log(f"Selected slot: {label} ({s_start}–{s_end})")
 
         start_input = page.query_selector("#ctl00_ContentPlaceHolder1_StartTimePicker_dateInput")
         end_input = page.query_selector("#ctl00_ContentPlaceHolder1_EndTimePicker_dateInput")
-
         if start_input and end_input:
             start_input.fill(s_start)
             end_input.fill(s_end)
             page.keyboard.press("Tab")
             log("Time inputs filled.")
+            if save_html:
+                save_page_html(page, target_date, label="filled")
 
-        save_btn = page.query_selector("#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton")
-        if save_btn:
-            save_btn.click()
-            try:
-                page.wait_for_load_state("networkidle", timeout=10000)
-            except Exception:
-                page.wait_for_load_state("domcontentloaded", timeout=5000)
-
-            success_msg = f"Successfully booked tennis court for {target_date} at {label}."
-            log(success_msg)
-            send_notification("Tennis Court Booked Successfully!", success_msg)
+        if dry_run:
+            log(f"[DRY RUN] Would book '{label}' on {target_date}. Skipping save.")
+            input("\n[DRY RUN] Press Enter to close browser...")
         else:
-            msg = f"Save button not found when booking slot {label} on {target_date}."
-            log(msg, "ERROR")
-            send_notification("Tennis Court Booking Failed — Save Button Missing", msg)
+            save_btn = page.query_selector(
+                "#ctl00_ContentPlaceHolder1_FooterSaveButton, #ctl00_ContentPlaceHolder1_HeaderSaveButton"
+            )
+            if save_btn:
+                save_btn.click()
+                try:
+                    page.wait_for_load_state("networkidle", timeout=10000)
+                except Exception:
+                    page.wait_for_load_state("domcontentloaded", timeout=5000)
+                msg = f"Successfully booked tennis court for {target_date} at {label}."
+                log(msg)
+                send_notification("Tennis Court Booked Successfully!", msg, enabled=notifications)
+            else:
+                msg = f"Save button not found when booking {label} on {target_date}."
+                log(msg, "ERROR")
+                send_notification("Tennis Court Booking Failed — Save Button Missing", msg, enabled=notifications)
 
         browser.close()
-        log("=== court_booker run complete ===")
+        log(f"=== {profile} complete ===")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated tennis court booker.")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "--headless", action="store_true", help="Run browser in headless mode (default)"
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Run in dry-run mode (headful, +7d, saves HTML, no booking)"
     )
-    group.add_argument(
-        "--headful", action="store_true", help="Run browser in headful mode (visible GUI)"
-    )
-
     args = parser.parse_args()
-
-    # Default to headless=True for court_booker unless --headful is specified
-    is_headless = False if args.headful else True
-    book_court(headless=is_headless)
+    book_court(profile="dry_run" if args.dry_run else "court_booker")

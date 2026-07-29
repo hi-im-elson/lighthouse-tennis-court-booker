@@ -1,0 +1,60 @@
+2026-07-29 08:30:36 [DEBUG] Skipping email notification (disabled for run). Subject: Test Subject
+2026-07-29 08:30:36 [INFO ] === dry_run run started ===
+2026-07-29 08:30:36 [INFO ] Target date: 2026-08-05 (offset: +7 days)
+2026-07-29 08:30:36 [INFO ] Navigating to booking URL (headless=False, dry_run=True)
+2026-07-29 08:30:36 [INFO ] Initial page loaded. URL: https://example.com/?selectedDate=2026-08-05
+2026-07-29 08:30:36 [INFO ] Correct date confirmed: 2026-08-05
+2026-07-29 08:30:36 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:30:36 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00 - 19:00)
+2026-07-29 08:30:36 [INFO ] Time inputs filled.
+2026-07-29 08:30:36 [INFO ] [DRY RUN] Would book slot '6:00 PM - 7:00 PM' for date 2026-08-05. Save action skipped.
+2026-07-29 08:30:36 [INFO ] === court_booker run started ===
+2026-07-29 08:30:36 [INFO ] Target date: 2026-08-06 (offset: +8 days)
+2026-07-29 08:30:36 [INFO ] Navigating to booking URL (headless=True, dry_run=False)
+2026-07-29 08:30:36 [INFO ] Initial page loaded. URL: https://example.com/?selectedDate=2026-08-06
+2026-07-29 08:30:36 [INFO ] Correct date confirmed: 2026-08-06
+2026-07-29 08:30:36 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:30:36 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00 - 19:00)
+2026-07-29 08:30:36 [INFO ] Time inputs filled.
+2026-07-29 08:30:36 [INFO ] Successfully booked tennis court for 2026-08-06 at 6:00 PM - 7:00 PM.
+2026-07-29 08:30:36 [INFO ] === court_booker run complete ===
+2026-07-29 08:30:44 [DEBUG] Skipping email notification (disabled for run). Subject: Test Subject
+2026-07-29 08:30:44 [INFO ] === dry_run run started ===
+2026-07-29 08:30:44 [INFO ] Target date: 2026-08-05 (offset: +7 days)
+2026-07-29 08:30:44 [INFO ] Navigating to booking URL (headless=False, dry_run=True)
+2026-07-29 08:30:44 [INFO ] Initial page loaded. URL: https://example.com/?selectedDate=2026-08-05
+2026-07-29 08:30:44 [INFO ] Correct date confirmed: 2026-08-05
+2026-07-29 08:30:44 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:30:44 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00 - 19:00)
+2026-07-29 08:30:44 [INFO ] Time inputs filled.
+2026-07-29 08:30:44 [INFO ] [DRY RUN] Would book slot '6:00 PM - 7:00 PM' for date 2026-08-05. Save action skipped.
+2026-07-29 08:30:44 [INFO ] === dry_run run complete ===
+2026-07-29 08:30:44 [INFO ] === court_booker run started ===
+2026-07-29 08:30:44 [INFO ] Target date: 2026-08-06 (offset: +8 days)
+2026-07-29 08:30:44 [INFO ] Navigating to booking URL (headless=True, dry_run=False)
+2026-07-29 08:30:44 [INFO ] Initial page loaded. URL: https://example.com/?selectedDate=2026-08-06
+2026-07-29 08:30:44 [INFO ] Correct date confirmed: 2026-08-06
+2026-07-29 08:30:44 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:30:44 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00 - 19:00)
+2026-07-29 08:30:44 [INFO ] Time inputs filled.
+2026-07-29 08:30:44 [INFO ] Successfully booked tennis court for 2026-08-06 at 6:00 PM - 7:00 PM.
+2026-07-29 08:30:44 [INFO ] === court_booker run complete ===
+2026-07-29 08:41:48 [DEBUG] Skipping email notification (disabled). Subject: Test Subject
+2026-07-29 08:41:48 [INFO ] === dry_run started ===
+2026-07-29 08:41:48 [INFO ] Target date: 2026-08-05 (+7d), headless=False
+2026-07-29 08:41:48 [INFO ] Page loaded: https://example.com/?selectedDate=2026-08-05
+2026-07-29 08:41:48 [INFO ] Correct date confirmed: 2026-08-05
+2026-07-29 08:41:48 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:41:48 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00–19:00)
+2026-07-29 08:41:48 [INFO ] Time inputs filled.
+2026-07-29 08:41:48 [INFO ] [DRY RUN] Would book '6:00 PM - 7:00 PM' on 2026-08-05. Skipping save.
+2026-07-29 08:41:48 [INFO ] === dry_run complete ===
+2026-07-29 08:41:48 [INFO ] === court_booker started ===
+2026-07-29 08:41:48 [INFO ] Target date: 2026-08-06 (+8d), headless=True
+2026-07-29 08:41:48 [INFO ] Page loaded: https://example.com/?selectedDate=2026-08-06
+2026-07-29 08:41:48 [INFO ] Correct date confirmed: 2026-08-06
+2026-07-29 08:41:48 [INFO ] Available slots: ['5:00 PM - 8:00 PM']
+2026-07-29 08:41:48 [INFO ] Selected slot: 6:00 PM - 7:00 PM (18:00–19:00)
+2026-07-29 08:41:48 [INFO ] Time inputs filled.
+2026-07-29 08:41:48 [INFO ] Successfully booked tennis court for 2026-08-06 at 6:00 PM - 7:00 PM.
+2026-07-29 08:41:48 [INFO ] === court_booker complete ===

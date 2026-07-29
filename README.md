@@ -12,24 +12,34 @@ cp .env.example .env  # fill in your values
 
 ## Usage
 
-### Scheduled Court Booker
+### Scheduled Court Booker (GitHub Actions / Production)
+
+By default, `court_booker.py` runs in live booking mode targeting `+8` days offset (midnight adjustment for scheduled 23:59 ET runs), with headless browser, email notifications, and no HTML file dumps.
 
 ```bash
-# Default (headless mode)
-BL_USERNAME=username BL_PASSWORD=your_password poetry run python court_booker.py
+# Production run (headless, +8 days offset, email notifications enabled)
+poetry run python court_booker.py
 
 # Optional: Run with visible browser GUI
 poetry run python court_booker.py --headful
 ```
 
-### Dry Run (DOM inspection — run before deploying)
+### Dry Run / Manual Testing
+
+Dry run mode (`dry_run.py` or `court_booker.py --dry-run`) defaults to `+7` days offset (exactly 1 week out), disables email notifications, skips clicking Save, and optionally dumps page HTML to `html/`.
 
 ```bash
-# Default (headful mode so you can watch)
-BL_USERNAME=username BL_PASSWORD=your_password poetry run python dry_run.py
+# Run dry run via convenience wrapper (headful GUI by default)
+poetry run python dry_run.py
 
-# Optional: Run headlessly (e.g. on headless server / CI)
-poetry run python dry_run.py --headless
+# Run dry run directly via court_booker.py
+poetry run python court_booker.py --dry-run
+
+# Options:
+poetry run python dry_run.py --headless            # Run without GUI
+poetry run python dry_run.py --days 8               # Custom date offset (+8 days)
+poetry run python dry_run.py --no-save-html         # Disable HTML file dump
+poetry run python dry_run.py --interactive          # Pause before closing browser
 ```
 
 ## Config

@@ -1,1 +1,14 @@
 enabled: true
+
+profiles:
+  court_booker:
+    headless: true
+    days_offset: 8
+    save_html: false
+    notifications: true
+
+  dry_run:
+    headless: false
+    days_offset: 7
+    save_html: true
+    notifications: true
