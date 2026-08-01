@@ -1,0 +1,10 @@
+2026-08-01 17:17:18 [INFO ] === dry_run started ===
+2026-08-01 17:17:18 [INFO ] Target date: 2026-08-08 (+7d), headless=False
+2026-08-01 17:17:23 [INFO ] Page loaded: https://auth.buildinglink.com/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dbl-web%26nonce%3D639212158429655538.YmU3M2MwNmEtMzIyZi00MTNmLTg3OWUtYWZmODM0NTg3NDA1ZGI2MDI5OGItNzE2Yy00ZjQzLWFjNzMtNjA2NjVhNmU0MWIw%26redirect_uri%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Foidc-callback%26response_mode%3Dform_post%26response_type%3Dcode%2520id_token%2520token%26returnUrl%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Ftenant%252Famenities%252Fnewreservation.aspx%253FamenityId%253D68068%2526from%253D0%2526selectedDate%253D2026-08-08%26scope%3Dopenid%2520profile%2520groups%2520buildinglink%2520offline_access%2520uuids%26state%3DOpenIdConnect.AuthenticationProperties%253DOFBzsJeIvX3QR4F-gsz9iYFR6NC4KSLSUuYuGtPtsAQmVA7V9v29gOIUaZS6AP6lsWtISQkXU22tncG2dAbLOXJUQQvLZr12Sfq-aW_9OuMVIARVfUkD2QPcpKNTZ0T9a9D4ENe2iE2eAC3tBQ-tkIKWlCV2mnnF-6MWXrnnbu4NThA4lmBQUgp5VGKs_iKyiqzesRa7bKyvomrSVbzeK_ewPmTXpIMdtBgmvJvXwP4TuROftr8Sduah8TWG8De8-SXv3WC8MoTUHj6f8M_M9Q%26x-client-SKU%3DID_NET461%26x-client-ver%3D5.4.0.0
+2026-08-01 17:17:23 [INFO ] Login redirect detected. Attempting authentication.
+2026-08-01 17:17:29 [INFO ] Login successful.
+2026-08-01 17:17:29 [INFO ] Saved HTML: html/after_login_2026-08-08_20260801_171729.html
+2026-08-01 17:17:29 [INFO ] Correct date confirmed: 2026-08-08
+2026-08-01 17:17:29 [WARNING] Amenity unavailable on 2026-08-08.
+2026-08-01 17:17:29 [INFO ] Saved HTML: html/unavailable_2026-08-08_20260801_171729.html
+2026-08-01 17:17:29 [WARNING] Skipping notification (missing env vars). Subject: Tennis Court Booking Failed — Unavailable

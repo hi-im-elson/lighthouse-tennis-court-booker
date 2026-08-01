@@ -8,6 +8,7 @@ on:
 jobs:
   book:
     runs-on: ubuntu-latest
+    environment: actions-tennis-court-booker
 
     env:
       BL_USERNAME: ${{ secrets.BL_USERNAME }}
