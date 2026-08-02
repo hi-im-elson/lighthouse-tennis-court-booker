@@ -1,0 +1,15 @@
+2026-08-02 08:15:51 [INFO ] === dry_run started ===
+2026-08-02 08:15:51 [INFO ] Target date: 2026-08-09 (+7d), headless=False
+2026-08-02 08:15:53 [INFO ] Page loaded: https://auth.buildinglink.com/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dbl-web%26nonce%3D639212697533645045.MDhkNjVjNzktZWVkYS00NzRkLWFjNzItNjdkNDQ0NzRhNGIxOTc0YjE5NmYtNTQ0OC00MWZjLThiMjYtOWE1MDZjMTZhNTFh%26redirect_uri%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Foidc-callback%26response_mode%3Dform_post%26response_type%3Dcode%2520id_token%2520token%26returnUrl%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Ftenant%252Famenities%252Fnewreservation.aspx%253FamenityId%253D68068%2526from%253D0%2526selectedDate%253D2026-08-09%26scope%3Dopenid%2520profile%2520groups%2520buildinglink%2520offline_access%2520uuids%26state%3DOpenIdConnect.AuthenticationProperties%253Dlx0Nvtxr30h6YFLSzfL5BSOQLzVPSUwS2BhY7dZkaOu1mSdGk38tzZdfJZuRsSwKYYAC5IQc41OEYV0yngMshqKIHv0pZN6gkm_cQLvjH1op-RW2VHu3wfVhr4NrYmLYC_reSDQyU1RTKNzktB8kX0SatEdTN1W_2O1kdUaESvrrV6AvwU2XQk7TYguPt00bIsvFcQTFZ3J2urtHoXY0YWo3VSLwenf1XmiXBYLcSOtSCI1u8_HtQWfY8KPmbOfysPEL5DGgqV3bCl8DV-3XhQ%26x-client-SKU%3DID_NET461%26x-client-ver%3D5.4.0.0
+2026-08-02 08:15:53 [INFO ] Login redirect detected. Attempting authentication.
+2026-08-02 08:15:59 [INFO ] Login successful.
+2026-08-02 08:15:59 [INFO ] Saved HTML: html/after_login_2026-08-09_20260802_081559.html
+2026-08-02 08:15:59 [INFO ] Correct date confirmed: 2026-08-09
+2026-08-02 08:15:59 [INFO ] Available slots: ['15:00 - 17:00']
+2026-08-02 08:15:59 [INFO ] Saved HTML: html/availability_2026-08-09_20260802_081559.html
+2026-08-02 08:15:59 [INFO ] Selected slot: 4:00 PM - 5:00 PM (16:00–17:00)
+2026-08-02 08:15:59 [INFO ] Time inputs filled.
+2026-08-02 08:15:59 [INFO ] Saved HTML: html/filled_2026-08-09_20260802_081559.html
+2026-08-02 08:16:09 [INFO ] Successfully booked tennis court for 2026-08-09 at 4:00 PM - 5:00 PM.
+2026-08-02 08:16:09 [WARNING] Skipping notification (missing env vars). Subject: Tennis Court Booked Successfully!
+2026-08-02 08:16:09 [INFO ] === dry_run complete ===

@@ -8,3 +8,13 @@
 2026-08-01 17:17:29 [WARNING] Amenity unavailable on 2026-08-08.
 2026-08-01 17:17:29 [INFO ] Saved HTML: html/unavailable_2026-08-08_20260801_171729.html
 2026-08-01 17:17:29 [WARNING] Skipping notification (missing env vars). Subject: Tennis Court Booking Failed — Unavailable
+2026-08-01 17:18:48 [INFO ] === dry_run started ===
+2026-08-01 17:18:48 [INFO ] Target date: 2026-08-08 (+7d), headless=False
+2026-08-01 17:18:50 [INFO ] Page loaded: https://auth.buildinglink.com/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dbl-web%26nonce%3D639212159300940725.NjBhYjcyNzItOGIyYy00MTc0LWI0NjktNGM1YzAwMjEzNDQwOWU4NWNlYzctNWRlMS00ZDQ4LThiNGItZWVhNmMwMTI3YThj%26redirect_uri%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Foidc-callback%26response_mode%3Dform_post%26response_type%3Dcode%2520id_token%2520token%26returnUrl%3Dhttps%253A%252F%252Flighthousewest-tscc2794.buildinglink.com%252Fv2%252Ftenant%252Famenities%252Fnewreservation.aspx%253FamenityId%253D68068%2526from%253D0%2526selectedDate%253D2026-08-08%26scope%3Dopenid%2520profile%2520groups%2520buildinglink%2520offline_access%2520uuids%26state%3DOpenIdConnect.AuthenticationProperties%253DXHeC5Q8bWYDXc4YA3blsGWgLyBnHwdhyT67HxHNK1DYCSePIYV078Hq52eJ0xAogZFBF4CxyhiCJZBUxdpVA0_3xeNt43hBehAsy1OLe40MXBQenRhBU2RPa9imlJifmtsP5oNw1I6u5PYlpFtlCjeaDHe83SXpfhf1M-3t2uUgH57FdG0zpbIco7b91Y59O5XHZzqPXXkRkogzjqMXcWbA5H281Tbp4F-WNiJX-9zAIwShEitAQ75nXVxTxp0sJbSsamhZFfsnWfS2Y1wnOHw%26x-client-SKU%3DID_NET461%26x-client-ver%3D5.4.0.0
+2026-08-01 17:18:50 [INFO ] Login redirect detected. Attempting authentication.
+2026-08-01 17:18:56 [INFO ] Login successful.
+2026-08-01 17:18:56 [INFO ] Saved HTML: html/after_login_2026-08-08_20260801_171856.html
+2026-08-01 17:18:56 [INFO ] Correct date confirmed: 2026-08-08
+2026-08-01 17:18:56 [WARNING] Amenity unavailable on 2026-08-08.
+2026-08-01 17:18:56 [INFO ] Saved HTML: html/unavailable_2026-08-08_20260801_171856.html
+2026-08-01 17:18:56 [WARNING] Skipping notification (missing env vars). Subject: Tennis Court Booking Failed — Unavailable

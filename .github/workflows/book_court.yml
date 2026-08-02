@@ -2,7 +2,8 @@ name: Book Tennis Court
 
 on:
   schedule:
-    - cron: "59 3 * * *"  # 23:59 ET (UTC-4, EDT)
+    - cron: "59 23 * * *"  # 23:59 ET (UTC-4, EDT)
+      timezone: 'America/Toronto'
   workflow_dispatch:
 
 jobs:

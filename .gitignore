@@ -2,3 +2,5 @@ plan.md
 .env
 __pycache__/
 **/__pycache__/
+test.py
+sandbox.py
