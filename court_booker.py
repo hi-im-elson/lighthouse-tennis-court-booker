@@ -70,6 +70,12 @@ def save_page_html(page, target_date: str, label: str = "page"):
         log(f"Failed to save HTML: {e}", "WARNING")
 
 
+def set_target_date(tz="America/New York", days_offset=8):
+    tz = pytz.timezone(tz)
+    target_date = (datetime.now(tz) + timedelta(days=days_offset)).strftime("%Y-%m-%d") 
+    return target_date
+
+
 def book_court(profile: str = "court_booker"):
     cfg = load_config(profile)
     skip_booking = profile == "dry_run_no_save"
@@ -84,8 +90,8 @@ def book_court(profile: str = "court_booker"):
         log("Missing BL_USERNAME or BL_PASSWORD.", "ERROR")
         sys.exit(1)
 
-    tz = pytz.timezone("America/New_York")
-    target_date = (datetime.now(tz) + timedelta(days=days_offset)).strftime("%Y-%m-%d")
+    target_date = set_target_date(days_offset=8)
+    next_target_date = set_target_date(days_offset=8) # placeholder value to be replaced
     url = get_reservation_url(target_date)
     log(f"Target date: {target_date} (+{days_offset}d), headless={headless}")
 
@@ -101,6 +107,11 @@ def book_court(profile: str = "court_booker"):
         deadline = time_module.time() + (60 if skip_booking else 240)
         retry_count = 0
         while True:
+
+            if retry_count > 9 and target_date==next_target_date: # job inits at 23:59 for ~15 secs
+                next_target_date = set_target_date(days_offset=7) # updates target date to one week from current date
+                url = get_reservation_url(next_target_date)
+
             raw = page.url.split("selectedDate=")[-1] if "selectedDate=" in page.url else ""
             try:
                 landed = parse_date(raw).strftime("%Y-%m-%d") if raw else ""
