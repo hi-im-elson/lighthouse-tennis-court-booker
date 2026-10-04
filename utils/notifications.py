@@ -17,7 +17,7 @@ def create_ics_attachment(
     target_date: str,
     start_time: str,
     end_time: str,
-    tz_name: str = "America/New_York",
+    tz_name: str = "America/Toronto",
     title: str = "Tennis at Condo",
 ) -> tuple[str, bytes]:
     tz = pytz.timezone(tz_name)

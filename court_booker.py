@@ -10,7 +10,7 @@ from dateutil.parser import parse as parse_date
 import time as time_module
 
 from utils.logger import log
-from utils.notifications import send_notification
+from utils.notifications import send_notification, create_ics_attachment
 from utils.booker import get_reservation_url, create_browser_context, login_if_needed
 
 load_dotenv()
@@ -70,7 +70,7 @@ def save_page_html(page, target_date: str, label: str = "page"):
         log(f"Failed to save HTML: {e}", "WARNING")
 
 
-def set_target_date(tz="America/New York", days_offset=8):
+def set_target_date(tz="America/Toronto", days_offset=8):
     tz = pytz.timezone(tz)
     target_date = (datetime.now(tz) + timedelta(days=days_offset)).strftime("%Y-%m-%d") 
     return target_date
@@ -214,7 +214,19 @@ def book_court(profile: str = "court_booker"):
                     page.wait_for_load_state("domcontentloaded", timeout=5000)
                 msg = f"Successfully booked tennis court for {target_date} at {label}."
                 log(msg)
-                send_notification("Tennis Court Booked Successfully!", msg, enabled=notifications)
+
+                ics_attachment = create_ics_attachment(
+                    target_date=target_date,
+                    start_time=s_start,
+                    end_time=s_end,
+                )
+
+                send_notification(
+                    "Tennis Court Booked Successfully!",
+                    msg,
+                    enabled=notifications,
+                    attachment=ics_attachment,
+                )
             else:
                 msg = f"Save button not found when booking {label} on {target_date}."
                 log(msg, "ERROR")

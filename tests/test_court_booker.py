@@ -56,7 +56,7 @@ def test_book_court_dry_run_defaults(mock_load_config, mock_playwright, mock_cre
     mock_page = MagicMock()
     mock_create_context.return_value = (mock_browser, mock_context, mock_page)
 
-    tz = pytz.timezone("America/New_York")
+    tz = pytz.timezone("America/Toronto")
     expected_target_date = (datetime.now(tz) + timedelta(days=7)).strftime("%Y-%m-%d")
     mock_page.url = f"https://example.com/?selectedDate={expected_target_date}"
     mock_page.query_selector.return_value = None
@@ -102,7 +102,7 @@ def test_book_court_live_defaults(mock_load_config, mock_playwright, mock_create
     mock_page = MagicMock()
     mock_create_context.return_value = (mock_browser, mock_context, mock_page)
 
-    tz = pytz.timezone("America/New_York")
+    tz = pytz.timezone("America/Toronto")
     expected_target_date = (datetime.now(tz) + timedelta(days=8)).strftime("%Y-%m-%d")
     mock_page.url = f"https://example.com/?selectedDate={expected_target_date}"
 
